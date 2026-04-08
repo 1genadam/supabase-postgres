@@ -155,14 +155,13 @@
       loop_control:
         loop_var: 'pg_config_item'
 
-    - name: import postgresql.conf, pg_hba.conf, and pg_ident.conf
+    - name: import postgresql.conf and pg_ident.conf
       ansible.builtin.template:
         dest: '/etc/postgresql/{{ pg_config_item }}'
         group: 'postgres'
         src: 'files/postgresql_config/{{ pg_config_item }}.j2'
       loop:
         - 'postgresql.conf'
-        - 'pg_hba.conf'
         - 'pg_ident.conf'
       loop_control:
         loop_var: 'pg_config_item'
@@ -179,7 +178,7 @@
       block:
         - name: Check if psql_version is psql_15
           ansible.builtin.set_fact:
-            is_psql_15: "{{ psql_version in ['psql_15'] }}"
+            is_psql_15: "{{ psql_version == 'psql_15' or postgresql_major | int == 15 }}"
 
         - name: create placeholder pam config
           file:
