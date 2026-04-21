@@ -17,7 +17,7 @@ buildGoModule {
   '';
   # Tests require a running PostgreSQL instance (integration tests); skip in sandbox.
   doCheck = false;
-  vendorHash = "sha256-cqSd6Dv0WYOVwg7AE1tZPh9uzsjDG32gF6eJzARsHo8=";
+  vendorHash = "sha256-8n0tUtBfhrPfo2d1rNWkzS/r47KbBQzgzZWWWSF+gwQ=";
 
   meta = {
     description = "PostgreSQL control daemon for Multigres cluster lifecycle management";
