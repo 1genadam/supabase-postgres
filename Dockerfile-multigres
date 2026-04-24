@@ -204,17 +204,18 @@ RUN printf '#!/bin/sh\nexec /nix/var/nix/profiles/default/bin/pgctld --postgres-
 RUN sed -i 's/ timescaledb,//g; s/ plv8,//g' /etc/postgresql-custom/supautils.conf
 
 # Generate a single SQL manifest that pgctld runs via --init-db-sql-file after initdb.
-# Creates the postgres role (needed by init-scripts/migrations that GRANT to it),
-# then \ir-includes all init-scripts and migrations in sorted order.
+# Creates the postgres role, runs init-scripts as postgres (matching migrate.sh),
+# then runs migrations as supabase_admin.
 RUN set -e && \
     manifest=/docker-entrypoint-initdb.d/multigres-init.sql && \
     printf -- "-- Auto-generated: run init-scripts and migrations after initdb\n" > "$manifest" && \
     printf "DO \$\$ BEGIN\n  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'postgres') THEN\n    CREATE ROLE postgres SUPERUSER LOGIN;\n  END IF;\nEND \$\$;\n" >> "$manifest" && \
     printf "ALTER DATABASE postgres OWNER TO postgres;\n\n" >> "$manifest" && \
+    printf "SET SESSION AUTHORIZATION postgres;\n" >> "$manifest" && \
     for f in $(ls /docker-entrypoint-initdb.d/init-scripts/*.sql 2>/dev/null | sort); do \
         printf '\\ir init-scripts/%s\n' "$(basename "$f")" >> "$manifest"; \
     done && \
-    printf "\n" >> "$manifest" && \
+    printf "\nRESET SESSION AUTHORIZATION;\n\n" >> "$manifest" && \
     for f in $(ls /docker-entrypoint-initdb.d/migrations/*.sql 2>/dev/null | sort); do \
         printf '\\ir migrations/%s\n' "$(basename "$f")" >> "$manifest"; \
     done && \
@@ -291,10 +292,11 @@ RUN set -e && \
     printf -- "-- Auto-generated: run init-scripts and migrations after initdb\n" > "$manifest" && \
     printf "DO \$\$ BEGIN\n  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'postgres') THEN\n    CREATE ROLE postgres SUPERUSER LOGIN;\n  END IF;\nEND \$\$;\n" >> "$manifest" && \
     printf "ALTER DATABASE postgres OWNER TO postgres;\n\n" >> "$manifest" && \
+    printf "SET SESSION AUTHORIZATION postgres;\n" >> "$manifest" && \
     for f in $(ls /docker-entrypoint-initdb.d/init-scripts/*.sql 2>/dev/null | sort); do \
         printf '\\ir init-scripts/%s\n' "$(basename "$f")" >> "$manifest"; \
     done && \
-    printf "\n" >> "$manifest" && \
+    printf "\nRESET SESSION AUTHORIZATION;\n\n" >> "$manifest" && \
     for f in $(ls /docker-entrypoint-initdb.d/migrations/*.sql 2>/dev/null | sort); do \
         printf '\\ir migrations/%s\n' "$(basename "$f")" >> "$manifest"; \
     done && \
