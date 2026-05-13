@@ -6,15 +6,16 @@ primary_region = "ord"
   image = "supabase/postgres:17.6.1.121"
 
 [env]
+  # Mount volume at /data, set PGDATA to subdirectory to avoid lost+found conflict
+  PGDATA = "/data/pgdata"
   # Supabase postgres default superuser is "supabase_admin"
   # A "postgres" superuser is also created.
   # Set POSTGRES_PASSWORD secret before first deploy:
   #   flyctl secrets set POSTGRES_PASSWORD=<strong-password> -a dev-wc-ducomb-supabase-db
 
-# PGDATA is /var/lib/postgresql/data inside the image
 [[mounts]]
   source = "supabase_pg_data"
-  destination = "/var/lib/postgresql/data"
+  destination = "/data"
 
 # Expose postgres port on Fly private network only (flycast)
 [[services]]
