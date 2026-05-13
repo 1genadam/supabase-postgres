@@ -1,0 +1,9 @@
+FROM supabase/postgres:17.6.1.121
+
+# Fly volumes mount as root:root. Postgres needs to own PGDATA.
+# This entrypoint wrapper creates /data/pgdata if missing and fixes ownership.
+COPY fly-entrypoint.sh /usr/local/bin/fly-entrypoint.sh
+RUN chmod +x /usr/local/bin/fly-entrypoint.sh
+
+ENTRYPOINT ["fly-entrypoint.sh"]
+CMD ["postgres", "-D", "/etc/postgresql"]

@@ -1,9 +1,10 @@
 app = "dev-wc-ducomb-supabase-db"
 primary_region = "ord"
 
-# Use the supabase/postgres image directly — pgvector, pg_trgm, etc. pre-installed
+# Build from local Dockerfile.fly which wraps supabase/postgres:17.6.1.121
+# with a permission-fixing entrypoint for Fly volume compatibility
 [build]
-  image = "supabase/postgres:17.6.1.121"
+  dockerfile = "Dockerfile.fly"
 
 [env]
   # Mount volume at /data, set PGDATA to subdirectory to avoid lost+found conflict
