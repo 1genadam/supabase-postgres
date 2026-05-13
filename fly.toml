@@ -1,0 +1,40 @@
+app = "dev-wc-ducomb-supabase-db"
+primary_region = "ord"
+
+# Use the supabase/postgres image directly — pgvector, pg_trgm, etc. pre-installed
+[build]
+  image = "supabase/postgres:17.6.1.121"
+
+[env]
+  # Supabase postgres default superuser is "supabase_admin"
+  # A "postgres" superuser is also created.
+  # Set POSTGRES_PASSWORD secret before first deploy:
+  #   flyctl secrets set POSTGRES_PASSWORD=<strong-password> -a dev-wc-ducomb-supabase-db
+
+# PGDATA is /var/lib/postgresql/data inside the image
+[[mounts]]
+  source = "supabase_pg_data"
+  destination = "/var/lib/postgresql/data"
+
+# Expose postgres port on Fly private network only (flycast)
+[[services]]
+  protocol = "tcp"
+  internal_port = 5432
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 5432
+
+[checks]
+  [checks.pg]
+    port = 5432
+    type = "tcp"
+    interval = "15s"
+    timeout = "10s"
+    grace_period = "60s"
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "1gb"
